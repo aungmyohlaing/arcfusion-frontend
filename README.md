@@ -35,8 +35,7 @@ A modern React-based frontend application for ArcFusion, featuring PDF document 
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd arcfusion-frontend
+   git clone <repository-url>   
    ```
 
 2. **Install dependencies**
@@ -145,19 +144,3 @@ docker-compose up --build
 docker build -t arcfusion-frontend .
 docker run -p 5173:5173 arcfusion-frontend
 ```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions, please open an issue in the repository or contact the development team.

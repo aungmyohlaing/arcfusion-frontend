@@ -363,17 +363,17 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
         </div>
         <div className="w-full max-w-md mx-auto mt-10" style={{ display: uploadedFiles.length > 0 ? 'block' : 'none' }} role="region" aria-label="Chat session controls">
           {chatSessionInfo.hasMessages && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg" role="status" aria-live="polite">
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg" role="status" aria-live="polite">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-blue-700 font-medium">
+                <span className="text-blue-700 dark:text-blue-300 font-medium">
                   Existing chat session found
                 </span>
-                <span className="text-blue-600">
+                <span className="text-blue-600 dark:text-blue-400">
                   {chatSessionInfo.messageCount} message{chatSessionInfo.messageCount !== 1 ? 's' : ''}
                 </span>
               </div>
               {chatSessionInfo.lastMessageTime && (
-                <div className="text-xs text-blue-600 mt-1">
+                <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                   Last message: {formatLastMessageTime(chatSessionInfo.lastMessageTime)}
                 </div>
               )}

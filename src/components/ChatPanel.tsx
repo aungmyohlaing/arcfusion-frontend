@@ -195,18 +195,18 @@ const ChatPanel: React.FC = () => {
         <div className="flex flex-row gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400 items-center">
           {/* Chat Memory Indicator */}
           {chatMemory.hasStoredData && (
-            <div className="flex items-center gap-1 sm:gap-2 bg-blue-50 px-2 sm:px-3 py-1 rounded-lg border border-blue-200" role="status" aria-live="polite">
-              <Database className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" aria-hidden="true" />
-              <span className="text-blue-700 text-xs hidden sm:inline">
+            <div className="flex items-center gap-1 sm:gap-2 bg-blue-50 dark:bg-blue-900 px-2 sm:px-3 py-1 rounded-lg border border-blue-200 dark:border-blue-800" role="status" aria-live="polite">
+              <Database className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+              <span className="text-blue-700 dark:text-blue-300 text-xs hidden sm:inline">
                 {chatMemory.messageCount} messages stored
               </span>
-              <span className="text-blue-700 text-xs sm:hidden">
+              <span className="text-blue-700 dark:text-blue-300 text-xs sm:hidden">
                 {chatMemory.messageCount}
               </span>
               <button
                 onClick={loadChatMemory}
                 disabled={isLoadingMemory}
-                className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium disabled:opacity-50"
+                className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-600 text-xs font-medium disabled:opacity-50"
                 aria-label={`Load ${chatMemory.messageCount} stored messages`}
                 aria-describedby="memory-load-description"
               >
@@ -248,11 +248,11 @@ const ChatPanel: React.FC = () => {
               <div className="flex flex-row gap-2">
               {msg.question && (
                 <>
-                  <div className="bg-primary text-white rounded-lg rounded-br-md px-4 py-2" role="textbox" aria-label="User message">
+                  <div className="bg-primary dark:bg-primary-dark text-white rounded-lg rounded-br-md px-4 py-2" role="textbox" aria-label="User message">
                     <div className="text-sm">{msg.question}</div>
                     <div className="text-xs mt-1 text-gray-500" aria-label="Message timestamp">{formatTimestamp(msg.timestamp)}</div>
                   </div>
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                  <div className="w-8 h-8 bg-primary dark:bg-primary-dark rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
                     <User className="w-4 h-4 text-white" />
                   </div>
                 </>
@@ -261,10 +261,10 @@ const ChatPanel: React.FC = () => {
               <div className="flex flex-row gap-2">
               {msg.answer && (
                 <>
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
-                    <Bot className="w-4 h-4 text-gray-600" />
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                    <Bot className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   </div>
-                  <div className="bg-gray-100 text-gray-800 rounded-lg rounded-bl-md px-4 py-2" role="textbox" aria-label="Assistant response">
+                  <div className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg rounded-bl-md px-4 py-2" role="textbox" aria-label="Assistant response">
                     <div className="text-sm">{msg.answer}</div>
                     <div className="text-xs mt-1 text-gray-500" aria-label="Message timestamp">{formatTimestamp(msg.timestamp)}</div>
                   </div>
@@ -278,12 +278,12 @@ const ChatPanel: React.FC = () => {
         
         {isLoading && (
           <div className="flex justify-start items-end gap-2" role="status" aria-live="polite" aria-label="Assistant is thinking">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
-              <Bot className="w-4 h-4 text-gray-600" />
+            <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
+              <Bot className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </div>
-            <div className="bg-gray-100 text-gray-800 rounded-lg rounded-bl-md px-4 py-2">
+            <div className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg rounded-bl-md px-4 py-2">
               <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600" aria-hidden="true"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 dark:border-gray-400" aria-hidden="true"></div>
                 <span className="text-sm">Thinking...</span>
               </div>
             </div>
