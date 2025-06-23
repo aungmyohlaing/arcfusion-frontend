@@ -11,7 +11,7 @@ import { setIsLoading } from '../store/chatSession';
 export default function Chat() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [uploadedFiles, setUploadedFiles] = useState<{id: string, filename: string, size: number}[]>([]);
+    const [uploadedFiles, setUploadedFiles] = useState<{files: {id: string, filename: string, size: number}[], total_files: number}>({files: [], total_files: 0});
     const isLoading = useSelector((state: RootState) => state.chatSession.isLoading);
     
     useEffect(() => {
@@ -19,7 +19,7 @@ export default function Chat() {
             try {
                 dispatch(setIsLoading(true));
                 const res = await apiClient.getUploadedFiles();
-                setUploadedFiles(res.files);
+                setUploadedFiles(res);
             } catch (error) {
                 console.error('Failed to fetch uploaded files:', error);
             } finally {

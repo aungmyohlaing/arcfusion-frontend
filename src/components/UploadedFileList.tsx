@@ -2,7 +2,7 @@ import { File } from 'lucide-react';
 
 // Uploaded file list component
 interface UploadedFileListProps {
-    uploadedFiles: {id: string, filename: string, size: number}[];    
+    uploadedFiles: {files: {id: string, filename: string, size: number}[], total_files: number};        
     isLoading: boolean;
 }
 
@@ -13,19 +13,22 @@ export default function UploadedFileList(props: UploadedFileListProps) {
 
     return (
         <div role="region" aria-label="Uploaded files list" >
-            <h3 className="text-lg font-medium mb-4">Uploaded Files</h3>
+            <div className="flex items-center mb-4">
+                <h3 className="text-lg font-medium">Uploaded Files</h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">({uploadedFiles.total_files} files)</span>
+            </div>
             <div className="space-y-2 pr-2" role="list" aria-label="List of uploaded files">        
             {isLoading ? (
                 <div className="flex flex-row items-center justify-center mt-4 overflow-hidden" role="status" aria-live="polite" aria-label="Loading uploaded files">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2" aria-hidden="true"></div>
                     <span className="text-sm">Loading...</span>
                 </div>
-            ) : uploadedFiles.length === 0 ? (
+            ) : uploadedFiles.files.length === 0 ? (
                 <div className="text-gray-400 text-center mt-4" role="status" aria-live="polite">
                     No files uploaded yet
                 </div>
             ) : (
-                uploadedFiles.map((file, index) => (
+                uploadedFiles.files.map((file, index) => (
                 <div key={index} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg mb-2" role="listitem">
                     <div className="flex items-center space-x-3 space-y-2">
                         <File className="w-8 h-8 text-red-500" aria-hidden="true" />

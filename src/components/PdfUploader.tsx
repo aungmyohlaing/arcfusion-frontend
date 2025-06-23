@@ -30,7 +30,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{files: {id: string, filename: string, size: number}[], total_files: number}>({files: [], total_files: 0});
   const [chatSessionInfo, setChatSessionInfo] = useState<ChatSessionInfo>({
     hasMessages: false,
     lastMessageTime: null,
@@ -104,8 +104,8 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
   const fetchUploadedFiles = async () => {
     try {
       dispatch(setIsLoading(true));
-      const response = await apiClient.getUploadedFiles();
-      setUploadedFiles(response.files);
+      const response = await apiClient.getUploadedFiles();      
+      setUploadedFiles(response);
     } catch (error) {
       console.error('Failed to fetch uploaded files:', error);
     } finally {
@@ -208,7 +208,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
   };
 
   const handleStartChat = async () => {
-    if (selectedFiles.length > 0 || uploadedFiles.length > 0) {
+    if (selectedFiles.length > 0 || uploadedFiles.files.length > 0) {
       let response;      
       if (!chatId) {        
         response = await apiClient.startChat();              
@@ -356,12 +356,12 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
             <p className="mt-2 text-sm text-red-500" role="alert" aria-live="assertive">{error}</p>
           )}
         </div>
-        <div className="mt-4" style={{ display: uploadedFiles.length > 0 ? 'block' : 'none' }} role="region" aria-label="Previously uploaded files">        
+        <div className="mt-4" style={{ display: uploadedFiles.files.length > 0 ? 'block' : 'none' }} role="region" aria-label="Previously uploaded files">        
           <div className="space-y-2 max-h-72 overflow-y-auto pr-2 mt-10">
-            <UploadedFileList uploadedFiles={uploadedFiles} isLoading={isLoading} />
+              <UploadedFileList uploadedFiles={uploadedFiles} isLoading={isLoading} />
           </div>
         </div>
-        <div className="w-full max-w-md mx-auto mt-10" style={{ display: uploadedFiles.length > 0 ? 'block' : 'none' }} role="region" aria-label="Chat session controls">
+        <div className="w-full max-w-md mx-auto mt-10" style={{ display: uploadedFiles.files.length > 0 ? 'block' : 'none' }} role="region" aria-label="Chat session controls">
           {chatSessionInfo.hasMessages && (
             <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg" role="status" aria-live="polite">
               <div className="flex items-center justify-between text-sm">
