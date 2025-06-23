@@ -12,7 +12,6 @@ import type { Message, ChatMemory } from '../types/common';
 const ChatPanel: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [chatMemory, setChatMemory] = useState<ChatMemory>({
     hasStoredData: false,
     messageCount: 0,
@@ -21,27 +20,25 @@ const ChatPanel: React.FC = () => {
   const [isLoadingMemory, setIsLoadingMemory] = useState<boolean>(false);
   const [showWarningModal, setShowWarningModal] = useState<boolean>(false);
   const [isResetting, setIsResetting] = useState<boolean>(false);
+  
   // Redux state
   const dispatch = useDispatch();
   const chatId = useSelector((state: RootState) => state.chatSession.chatId);
   const chatHistory = useSelector((state: RootState) => state.chatSession.chatHistory);
-  const { sendMessage } = useChatSocket(chatId);
+  const { sendMessage, wsMessages, isLoading } = useChatSocket(chatId);
 
   // Format timestamp  
   const formatTimestamp = (timestamp: any) => {        
-    // Ensure we have a proper Date object
     let date: Date;
     if (timestamp instanceof Date) {
       date = timestamp;
     } else if (timestamp) {
-      // If it's a string, try to parse it with timezone handling
       const timestampStr = timestamp.toString();
       const timestampWithZ = timestampStr.endsWith('Z') ? timestampStr : timestampStr + 'Z';
       date = new Date(timestampWithZ);
     } else {
       date = new Date();
     }
-    // Format timestamp to locale string
     return date.toLocaleString([], { 
       hour: '2-digit', 
       minute: '2-digit',
@@ -52,32 +49,24 @@ const ChatPanel: React.FC = () => {
   // Send message to server
   const handleSendMessage = async () => {
     if (!message.trim()) return;
-    
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      question: message,      
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setMessage('');
-    setIsLoading(true);
-    
+        
     try {
-      const assistantMessage = await sendMessage(userMessage.question || '');            
-      setMessages(prev => [...prev, assistantMessage]);
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        answer: 'Sorry, there was an error processing your message.',        
+      // Add user message immediately
+      const userMessage: Message = {
+        id: `user_${Date.now()}`,
+        chat_id: chatId,        
+        question: message,
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+      
+      setMessages(prev => [...prev, userMessage]);
+      setMessage('');
+      
+      // Send to server
+      await sendMessage(message);    
+    } catch (error) {
+      console.error('Error sending message:', error);     
+    } 
   }
 
   // Handle key press
@@ -97,16 +86,15 @@ const ChatPanel: React.FC = () => {
   const handleConfirmReset = async () => {
     setIsResetting(true);
     try {
-      await apiClient.resetChat();
-      setMessages([]);
+      await apiClient.resetChat();        
       setChatMemory({
         hasStoredData: false,
         messageCount: 0,
         lastUpdated: null
-      });
+      });      
+      setMessages([]);
       dispatch(clearChatId());
 
-      // Start a new chat session
       const response = await apiClient.startChat();     
       dispatch(setChatId(response.chat_id)); 
     } catch (error) {
@@ -140,33 +128,19 @@ const ChatPanel: React.FC = () => {
     }
   }
 
-  // Load chat memory from Redux state
+  // Load chat memory
   const loadChatMemory = async () => {
     if (!chatId) return;
     
     setIsLoadingMemory(true);
     try {       
-      const response = chatHistory;            
-      // Parse timestamps for existing messages and add 'Z' if needed
-      const parsedMessages = (response.messages || []).map((msg: any) => {
-        let timestamp: Date;
-        if (msg.timestamp) {
-          const timestampStr = msg.timestamp.toString();
-          const timestampWithZ = timestampStr.endsWith('Z') ? timestampStr : timestampStr + 'Z';
-          timestamp = new Date(timestampWithZ);
-        } else {
-          timestamp = new Date();
-        }
-        return {
-          ...msg,
-          timestamp: timestamp
-        };
-      });
-     
-      setMessages(prev => [...parsedMessages, ...prev]);
+      // Add history messages to current messages
+      const historyMessages = chatHistory.messages || [];
+      setMessages(prev => [...historyMessages, ...prev]);
+      
       setChatMemory(prev => ({
         ...prev,
-        hasStoredData: false, // Clear indicator after loading
+        hasStoredData: false,
         messageCount: 0
       }));
     } catch (error) {
@@ -176,10 +150,24 @@ const ChatPanel: React.FC = () => {
     }
   }
 
+  // Add WebSocket messages to display
+  useEffect(() => {
+    if (wsMessages.length > 0) {
+      const lastWsMessage = wsMessages[wsMessages.length - 1];
+      setMessages(prev => {
+        // Check if this message is already displayed
+        const exists = prev.some(msg => msg.id === lastWsMessage.id);
+        if (!exists) {
+          return [...prev, lastWsMessage];
+        }
+        return prev;
+      });
+    }
+  }, [wsMessages]);
+
   useEffect(() => {
     const initializeChat = async () => {
       if (chatId) {
-        // Only check for stored data, don't load it automatically
         await checkChatMemory();
       }
     };
@@ -239,40 +227,33 @@ const ChatPanel: React.FC = () => {
           </div>
         ) : (
           messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex flex-col items-end gap-2 ${msg.question ? 'justify-end' : 'justify-start'}`}
-              role="article"
-              aria-label={msg.question ? 'User message' : 'Assistant response'}
-            >
-              <div className="flex flex-row gap-2">
+            <React.Fragment key={msg.id}>
+              {/* User Question */}
               {msg.question && (
-                <>
-                  <div className="bg-primary dark:bg-primary-dark text-white rounded-lg rounded-br-md px-4 py-2" role="textbox" aria-label="User message">
+                <div className="flex justify-end items-end gap-2" role="article" aria-label="User message">
+                  <div className="bg-primary dark:bg-primary-dark text-white rounded-lg rounded-br-md px-4 py-2 max-w-[80%]" role="textbox" aria-label="User message">
                     <div className="text-sm">{msg.question}</div>
-                    <div className="text-xs mt-1 text-gray-500" aria-label="Message timestamp">{formatTimestamp(msg.timestamp)}</div>
+                    <div className="text-xs mt-1 text-gray-300" aria-label="Message timestamp">{formatTimestamp(msg.timestamp)}</div>
                   </div>
                   <div className="w-8 h-8 bg-primary dark:bg-primary-dark rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
                     <User className="w-4 h-4 text-white" />
                   </div>
-                </>
+                </div>
               )}
-              </div>
-              <div className="flex flex-row gap-2">
+              
+              {/* Assistant Answer */}
               {msg.answer && (
-                <>
+                <div className="flex justify-start items-end gap-2" role="article" aria-label="Assistant response">
                   <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
                     <Bot className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   </div>
-                  <div className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg rounded-bl-md px-4 py-2" role="textbox" aria-label="Assistant response">
+                  <div className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg rounded-bl-md px-4 py-2 max-w-[80%]" role="textbox" aria-label="Assistant response">
                     <div className="text-sm">{msg.answer}</div>
                     <div className="text-xs mt-1 text-gray-500" aria-label="Message timestamp">{formatTimestamp(msg.timestamp)}</div>
                   </div>
-                </>
+                </div>
               )}
-              </div>
-              
-            </div>
+            </React.Fragment>
           ))
         )}
         
