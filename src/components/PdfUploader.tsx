@@ -152,7 +152,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
   };
 
   const validateFile = (file: File): boolean => {
-    if (file.type !== 'application/pdf') {
+    if (file.type !== 'application/pdf') {        
       setError('Please upload PDF files only');
       return false;
     }
@@ -171,13 +171,11 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({
     setIsDragging(false);
     
     const files = Array.from(e.dataTransfer.files);
-    const validFiles = files.filter(file => validateFile(file));    
+    const validFiles = files.filter(file => validateFile(file));        
     if (validFiles.length > 0) {
       setSelectedFiles(prev => [...prev, ...validFiles]);
       onFileUpload?.(validFiles);
-    } else {
-      setError('No valid PDF files found');
-    }
+    } 
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
